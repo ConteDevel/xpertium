@@ -12,34 +12,27 @@ class expert_t {
     using questv_t = quest_t<val_t>;
     using rulev_t = rule_t<val_t>;
 
-    std::vector<questv_t> m_quests;
-    std::vector<rulev_t *> m_rules;
+    std::vector<questv_t> *m_quests;
+    std::vector<rulev_t *> *m_rules;
 
     std::vector<val_t> m_facts;
     std::vector<questv_t *> m_act_quests;
     std::vector<rulev_t *> m_act_rules;
 public:
-    expert_t(std::vector<questv_t> &&quests, std::vector<rulev_t *> &&rules)
-        : m_quests{std::forward<std::vector<questv_t>>(quests)},
-          m_rules{std::forward<std::vector<rulev_t *>>(rules)} {}
-
-    virtual ~expert_t() {
-        for (auto it = m_rules.begin() ; it != m_rules.end(); ++it) {
-             delete (*it);
-        }
-        m_rules.clear();
-    }
+    expert_t(std::vector<questv_t> *quests, std::vector<rulev_t *> *rules)
+        : m_quests{quests}, m_rules{rules} {}
+    virtual ~expert_t() {}
 
     void reset() {
         m_facts.clear();
         m_act_quests.clear();
         m_act_rules.clear();
         // Copy questions
-        for (auto i = m_quests.begin(); i != m_quests.end(); ++i) {
+        for (auto i = m_quests->begin(); i != m_quests->end(); ++i) {
             m_act_quests.push_back(&*i);
         }
         // Copy rules
-        for (auto i = m_rules.begin(); i != m_rules.end(); ++i) {
+        for (auto i = m_rules->begin(); i != m_rules->end(); ++i) {
             // Copy all but trivial rules
             if ((*i)->is(m_facts)) m_facts.push_back((*i)->out());
             else m_act_rules.push_back(*i);
