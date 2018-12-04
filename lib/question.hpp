@@ -26,6 +26,9 @@ public:
     quest_t(std::string quest, std::initializer_list<ans_t<val_t>> answer_list)
         : question{std::forward<std::string>(quest)}, answers{answer_list} {}
 
+    quest_t(std::string quest, std::vector<ans_t<val_t>> answers)
+        : question{std::forward<std::string>(quest)}, answers{answers} {}
+
     bool suitable(const std::vector<val_t> &facts) const {
         for (auto ans : answers) {
             if (std::find(facts.begin(), facts.end(), ans.id) != facts.end()) {
