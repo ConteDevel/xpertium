@@ -94,13 +94,13 @@ public:
  */
 template <typename val_t>
 class not_t: public exp_t<val_t> {
-    std::unique_ptr<exp_t<val_t>> m_exp;
+    exp_t<val_t> m_exp;
 public:
     /**
      * @brief Constructor
      * @param exp Nested logical expression
      */
-    not_t(exp_t<val_t> *exp) : m_exp(exp) {}
+    not_t(exp_t<val_t> &&exp) : m_exp{std::forward<exp_t<val_t>>(exp)} {}
 
     /**
      * @brief Move constructor
@@ -119,7 +119,7 @@ public:
      * @inherits
      */
     virtual bool is(const vals_t<val_t> &kb) const override {
-        return !m_exp->is(kb);
+        return !m_exp.is(kb);
     }
 };
 
