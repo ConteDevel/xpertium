@@ -2,144 +2,239 @@
 #define EXPRESSION_HPP
 
 #include <algorithm>
-#include <initializer_list>
 #include <memory>
 #include <vector>
 
+namespace xpertium {
+
+template <typename val_t> using  vals_t = std::vector<val_t>;
+
+/**
+ * This class must be a parent of all expression classes
+ */
 template <typename val_t>
 class exp_t {
 public:
-    using vals_t = std::vector<val_t>;
-
+    /**
+     * @brief Constructor
+     */
     exp_t() {}
+
+    /**
+     * @brief Deletes copy constructor
+     */
+    exp_t(const exp_t<val_t> &) = delete;
+
+    /**
+     * @brief Move constructor
+     */
+    exp_t(exp_t &&) = default;
+
+    /**
+     * @brief Virtual destructor
+     */
     virtual ~exp_t() {}
 
-    virtual bool is(const vals_t &kb) const { return true; }
-    virtual int unknown(const vals_t &kb) const { return 0; }
-    virtual vals_t unknown_facts(const vals_t &kb) const {
-        return vals_t();
-    }
+    /**
+     * @brief Deletes a copy assignment
+     */
+    exp_t<val_t> &operator=(const exp_t<val_t> &) = delete;
+
+    /**
+     * @brief Deletes an assignment
+     */
+    exp_t<val_t> &operator=(exp_t<val_t> &) = delete;
+
+    /**
+     * @brief Move assignment
+     */
+    exp_t<val_t> &operator=(exp_t &&) = default;
+
+    /**
+     * @brief Checks if the current logical expression is true
+     * @param kb Knowledge database
+     * @return Check result
+     */
+    virtual bool is(const vals_t<val_t> &kb) const { return true; }
 };
 
+/**
+ * This class represents a fact. The fact is always true
+ */
 template <typename val_t>
 class fact_t: public exp_t<val_t> {
+    val_t m_value;
 public:
-    using vals_t = std::vector<val_t>;
+    /**
+     * @brief Constructor
+     * @param value Fact value
+     */
+    fact_t(val_t &&value) : m_value{std::forward<val_t>(value)} {}
 
-    const val_t m_value;
+    /**
+     * @brief Move constructor
+     */
+    fact_t(fact_t &&) = default;
 
-    fact_t(val_t &&value): m_value{std::forward<val_t>(value)} {}
+    /**
+     * Move assignment
+     */
+    fact_t<val_t> &operator=(fact_t &&) = default;
 
-    virtual bool is(const vals_t &kb) const override {
+    /**
+     * @inherits
+     */
+    virtual bool is(const vals_t<val_t> &kb) const override {
         return std::find(kb.begin(), kb.end(), m_value) != kb.end();
-    }
-
-    virtual int unknown(const vals_t &kb) const override {
-        return is(kb) ? 0 : 1;
-    }
-
-    virtual vals_t unknown_facts(const vals_t &kb) const override {
-        auto facts = exp_t<val_t>::unknown_facts(kb);
-        if (!is(kb)) facts.push_back(m_value);
-        return facts;
     }
 };
 
+/**
+ * This class represents the logical negation
+ */
 template <typename val_t>
 class not_t: public exp_t<val_t> {
     std::unique_ptr<exp_t<val_t>> m_exp;
 public:
-    using vals_t = std::vector<val_t>;
+    /**
+     * @brief Constructor
+     * @param exp Nested logical expression
+     */
+    not_t(exp_t<val_t> *exp) : m_exp(exp) {}
 
-    not_t(exp_t<val_t> *exp)
-        : exp_t<val_t>(), m_exp(exp) {}
+    /**
+     * @brief Move constructor
+     */
+    not_t(not_t &&other) : m_exp{std::move(other.m_exp)} {}
 
-    virtual bool is(const vals_t &kb) const override {
+    /**
+     * @brief Move assignment
+     */
+    not_t<val_t> &operator=(not_t &&other) {
+        m_exp = std::move(other.m_exp);
+        return *this;
+    }
+
+    /**
+     * @inherits
+     */
+    virtual bool is(const vals_t<val_t> &kb) const override {
         return !m_exp->is(kb);
-    }
-
-    virtual int unknown(const vals_t &kb) const {
-        return m_exp->unknown(kb);
-    }
-
-    virtual vals_t unknown_facts(const vals_t &kb) const override {
-        return m_exp->unknown_facts(kb);
     }
 };
 
+template <typename val_t> using  exps_t = std::vector<exp_t<val_t>>;
+
+/**
+ * This class represents the logical conjunction
+ */
 template <typename val_t>
 class and_t: public exp_t<val_t> {
 protected:
-    std::vector<exp_t<val_t> *> m_exps;
+    exps_t<val_t> m_exps;
 public:
-    using vals_t = std::vector<val_t>;
+    /**
+     * @brief Constructor
+     * @param exps Nested logical expression
+     */
+    and_t(exps_t<val_t> &&exps) : exp_t<val_t>(),
+        m_exps{std::forward<exps_t<val_t>>(exps)} {}
 
-    and_t(std::initializer_list<exp_t<val_t> *> exps)
-        : exp_t<val_t>(), m_exps{exps} {}
-    virtual ~and_t() {
-        for (auto it = m_exps.begin() ; it != m_exps.end(); ++it) {
-             delete (*it);
-        }
-        m_exps.clear();
-    }
+    /**
+     * Move constructor
+     */
+    and_t(and_t &&) = default;
 
-    virtual bool is(const vals_t &kb) const override {
+    /**
+     * Move assignment
+     */
+    and_t<val_t> &operator=(and_t &&) = default;
+
+    /**
+     * @inherits
+     */
+    virtual bool is(const vals_t<val_t> &kb) const override {
         for (auto &exp : m_exps) {
-            if (!exp->is(kb)) { return false; }
+            if (!exp.is(kb)) { return false; }
         }
         return true;
     }
-
-    virtual int unknown(const vals_t &kb) const {
-        int count = 0;
-
-        for (auto exp : m_exps) count += exp->unknown(kb);
-
-        return count;
-    }
-
-    virtual vals_t unknown_facts(const vals_t &kb) const override {
-        auto facts = exp_t<val_t>::unknown_facts(kb);
-        for (auto exp : m_exps) {
-            for (auto fact : exp->unknown_facts(kb)) facts.push_back(fact);
-        }
-        return facts;
-    }
 };
 
+/**
+ * This class represents the logical disjunction
+ */
 template <typename val_t>
 class or_t: public and_t<val_t> {
 public:
-    using vals_t = std::vector<val_t>;
+    /**
+     * @brief Constructor
+     * @param exps Nested logical expression
+     */
+    or_t(exps_t<val_t> &&exps):
+        and_t<val_t>{std::forward<exps_t<val_t>>(exps)} {}
 
-    or_t(std::initializer_list<exp_t<val_t> *> exps): and_t<val_t>(exps) {}
+    /**
+     * Move constructor
+     */
+    or_t(or_t &&) = default;
 
-    virtual bool is(const vals_t &kb) const override {
+    /**
+     * Move assignment
+     */
+    or_t<val_t> &operator=(or_t &&) = default;
+
+    /**
+     * @inherits
+     */
+    virtual bool is(const vals_t<val_t> &kb) const override {
         for (auto &exp : this->m_exps) {
-            if (exp->is(kb)) { return true; }
+            if (exp.is(kb)) { return true; }
         }
         return false;
     }
 };
 
 template <typename val_t>
-fact_t<val_t> *_fact(val_t &&v) {
-    return new fact_t<val_t>(std::forward<val_t>(v));
+/**
+ * @brief Creates a new fact
+ * @param v Fact value
+ * @return New fact
+ */
+fact_t<val_t> _fact(val_t &&v) {
+    return std::move(fact_t<val_t>(std::forward<val_t>(v)));
 }
 
 template <typename val_t>
-not_t<val_t> *_not(exp_t<val_t> *exp) {
-    return new not_t<val_t>(exp);
+/**
+ * @brief Creates a new negation
+ * @param exp Nested logical expression
+ * @return New negation
+ */
+not_t<val_t> _not(exp_t<val_t> &&exp) {
+    return std::move(not_t<val_t>(std::forward<exp_t<val_t>>(exp)));
 }
 
-template <typename val_t, typename ... args_t>
-and_t<val_t> *_and(args_t *... exps) {
-    return new and_t<val_t>({exps...});
+template <typename val_t>
+/**
+ * @brief Creates a new conjunction
+ * @param exps Nested logical expression
+ * @return New conjunction
+ */
+and_t<val_t> _and(exps_t<val_t> &&exps) {
+    return std::move(and_t<val_t>(std::forward<exps_t<val_t>>(exps)));
 }
 
-template <typename val_t, typename ... args_t>
-or_t<val_t> *_or(args_t *... exps) {
-    return new or_t<val_t>({exps...});
+template <typename val_t>
+/**
+ * @brief Creates a new disjunction
+ * @param exps Nested logical expression
+ * @return New disjunction
+ */
+or_t<val_t> _or(exps_t<val_t> &&exps) {
+    return std::move(or_t<val_t>(std::forward<exps_t<val_t>>(exps)));
+}
+
 }
 
 #endif // EXPRESSION_HPP

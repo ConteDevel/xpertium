@@ -7,6 +7,8 @@
 #include <limits>
 #include <vector>
 
+namespace xpertium {
+
 template <typename val_t>
 class expert_t {
     using questv_t = quest_t<val_t>;
@@ -71,5 +73,7 @@ private:
         return *quest;
     }
 };
+
+}
 
 #endif // EXPERT_SYSTEM_H

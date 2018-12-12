@@ -1,42 +1,119 @@
 #ifndef QUESTION_HPP
 #define QUESTION_HPP
 
-#include <algorithm>
 #include <initializer_list>
 #include <memory>
 #include <string>
 #include <vector>
 
+namespace xpertium {
+
+/**
+ * This class is used to define answer for the question
+ */
 template <typename val_t>
 class ans_t {
+    val_t m_id;
+    std::string m_title;
 public:
-    const val_t id;
-    const std::string title;
+    /**
+     * @brief Constructor
+     * @param id Answer ID (it must define a new fact in the system)
+     * @param title Human readable title
+     */
+    ans_t(val_t &&id, std::string &&title): m_id{std::forward<val_t>(id)},
+        m_title{std::forward<std::string>(title)} {}
+    /**
+     * @brief Copy constructor
+     */
+    ans_t(const ans_t<val_t> &) = default;
 
-    ans_t(val_t &&id, std::string &&title): id{std::forward<val_t>(id)},
-        title{std::forward<std::string>(title)} {}
+    /**
+     * @brief Move constructor
+     */
+    ans_t(ans_t &&) = default;
+
+    /**
+     * @brief Copy assignment
+     */
+    ans_t<val_t> &operator=(const ans_t<val_t> &) = default;
+
+    /**
+     * @brief Assignment
+     */
+    ans_t<val_t> &operator=(ans_t<val_t> &) = default;
+
+    /**
+     * @brief Move assignment
+     */
+    ans_t<val_t> &operator=(ans_t &&) = default;
+
+    /**
+     * @brief Returns a title of the answer
+     */
+    const std::string &title() { return m_title; }
+
+    /**
+     * @brief Returns an ID of the answer
+     */
+    const val_t &id() { return m_title; }
 };
 
+template <typename val_t> using answers_t = std::vector<ans_t<val_t>>;
+
+/**
+ * This class represents a question in the knowledge database
+ */
 template <typename val_t>
 class quest_t {
+    std::string m_question;
+    answers_t<val_t> m_answers;
 public:
-    const std::string question;
-    const std::vector<ans_t<val_t>> answers;
+    /**
+     * @brief Constructor
+     * @param quest Question
+     * @param answers List of answers
+     */
+    quest_t(std::string &&quest, answers_t<val_t> &&answers)
+        : m_question{std::forward<std::string>(quest)},
+          m_answers{std::forward<answers_t<val_t>>(answers)} {}
 
-    quest_t(std::string quest, std::initializer_list<ans_t<val_t>> answer_list)
-        : question{std::forward<std::string>(quest)}, answers{answer_list} {}
+    /**
+     * @brief Copy constructor
+     */
+    quest_t(const quest_t<val_t> &) = default;
 
-    quest_t(std::string quest, std::vector<ans_t<val_t>> answers)
-        : question{std::forward<std::string>(quest)}, answers{answers} {}
+    /**
+     * @brief Move constructor
+     */
+    quest_t(quest_t &&) = default;
 
-    bool suitable(const std::vector<val_t> &facts) const {
-        for (auto ans : answers) {
-            if (std::find(facts.begin(), facts.end(), ans.id) != facts.end()) {
-                return true;
-            }
-        }
-        return false;
-    }
+    /**
+     * @brief Copy assignment
+     */
+    quest_t<val_t> &operator=(const quest_t<val_t> &) = default;
+
+    /**
+     * @brief Assignment
+     */
+    quest_t<val_t> &operator=(quest_t<val_t> &) = default;
+
+    /**
+     * @brief Move assignment
+     */
+    quest_t<val_t> &operator=(quest_t &&) = default;
+
+    /**
+     * @brief Returns a human readable question
+     */
+    const std::string &question() { return m_question; }
+
+    /**
+     * @brief Returns a list of answers
+     */
+    const answers_t<val_t> &answers() { return m_answers; }
 };
+
+}
 
 #endif // QUESTION_HPP

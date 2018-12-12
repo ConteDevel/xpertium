@@ -7,6 +7,8 @@
 #include <string>
 #include <utility>
 
+namespace xpertium {
+
 template <typename val_t>
 class kb_t {
     using quests_t = std::vector<quest_t<val_t>>;
@@ -31,5 +33,7 @@ public:
         m_quests = std::forward<quests_t>(quests);
     }
 };
+
+}
 
 #endif // KB_HPP
