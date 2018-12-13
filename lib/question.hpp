@@ -21,8 +21,8 @@ public:
      * @param id Answer ID (it must define a new fact in the system)
      * @param title Human readable title
      */
-    ans_t(val_t &&id, std::string &&title): m_id{std::forward<val_t>(id)},
-        m_title{std::forward<std::string>(title)} {}
+    ans_t(val_t &&id, const std::string &title): m_id{std::move(id)},
+        m_title{title} {}
     /**
      * @brief Copy constructor
      */
@@ -74,9 +74,8 @@ public:
      * @param quest Question
      * @param answers List of answers
      */
-    quest_t(std::string &&quest, answers_t<val_t> &&answers)
-        : m_question{std::forward<std::string>(quest)},
-          m_answers{std::forward<answers_t<val_t>>(answers)} {}
+    quest_t(const std::string &quest, answers_t<val_t> &&answers)
+        : m_question{quest}, m_answers{std::move(answers)} {}
 
     /**
      * @brief Copy constructor

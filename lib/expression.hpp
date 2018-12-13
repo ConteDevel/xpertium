@@ -69,7 +69,7 @@ public:
      * @brief Constructor
      * @param value Fact value
      */
-    fact_t(val_t &&value) : m_value{std::forward<val_t>(value)} {}
+    fact_t(val_t &&value) : m_value{std::move(value)} {}
 
     /**
      * @brief Move constructor
@@ -94,13 +94,13 @@ public:
  */
 template <typename val_t>
 class not_t: public exp_t<val_t> {
-    exp_t<val_t> m_exp;
+    std::unique_ptr<exp_t<val_t>> m_exp;
 public:
     /**
      * @brief Constructor
      * @param exp Nested logical expression
      */
-    not_t(exp_t<val_t> &&exp) : m_exp{std::forward<exp_t<val_t>>(exp)} {}
+    not_t(exp_t<val_t> *exp) : m_exp{exp} {}
 
     /**
      * @brief Move constructor
@@ -119,11 +119,11 @@ public:
      * @inherits
      */
     virtual bool is(const vals_t<val_t> &kb) const override {
-        return !m_exp.is(kb);
+        return !m_exp->is(kb);
     }
 };
 
-template <typename val_t> using  exps_t = std::vector<exp_t<val_t>>;
+template <typename val_t> using  exps_t = std::vector<exp_t<val_t> *>;
 
 /**
  * This class represents the logical conjunction
@@ -137,13 +137,19 @@ public:
      * @brief Constructor
      * @param exps Nested logical expression
      */
-    and_t(exps_t<val_t> &&exps) : exp_t<val_t>(),
-        m_exps{std::forward<exps_t<val_t>>(exps)} {}
+    and_t(exps_t<val_t> &&exps) : exp_t<val_t>(), m_exps{std::move(exps)} {}
 
     /**
      * Move constructor
      */
     and_t(and_t &&) = default;
+
+    virtual ~and_t() {
+        for (auto it = m_exps.begin() ; it != m_exps.end(); ++it) {
+            delete (*it);
+        }
+        m_exps.clear();
+    }
 
     /**
      * Move assignment
@@ -154,8 +160,8 @@ public:
      * @inherits
      */
     virtual bool is(const vals_t<val_t> &kb) const override {
-        for (auto &exp : m_exps) {
-            if (!exp.is(kb)) { return false; }
+        for (auto exp : m_exps) {
+            if (!exp->is(kb)) { return false; }
         }
         return true;
     }
@@ -171,8 +177,7 @@ public:
      * @brief Constructor
      * @param exps Nested logical expression
      */
-    or_t(exps_t<val_t> &&exps):
-        and_t<val_t>{std::forward<exps_t<val_t>>(exps)} {}
+    or_t(exps_t<val_t> &&exps) : and_t<val_t>{std::move(exps)} {}
 
     /**
      * Move constructor
@@ -188,8 +193,8 @@ public:
      * @inherits
      */
     virtual bool is(const vals_t<val_t> &kb) const override {
-        for (auto &exp : this->m_exps) {
-            if (exp.is(kb)) { return true; }
+        for (auto exp : this->m_exps) {
+            if (exp->is(kb)) { return true; }
         }
         return false;
     }
@@ -202,17 +207,17 @@ template <typename val_t>
  * @return New fact
  */
 fact_t<val_t> _fact(val_t &&v) {
-    return std::move(fact_t<val_t>(std::forward<val_t>(v)));
+    return std::move(fact_t<val_t>(std::move(v)));
 }
 
 template <typename val_t>
 /**
  * @brief Creates a new negation
- * @param exp Nested logical expression
+ * @param exp Pointer of a nested logical expression
  * @return New negation
  */
-not_t<val_t> _not(exp_t<val_t> &&exp) {
-    return std::move(not_t<val_t>(std::forward<exp_t<val_t>>(exp)));
+not_t<val_t> _not(exp_t<val_t> *exp) {
+    return std::move(not_t<val_t>(exp));
 }
 
 template <typename val_t>
@@ -222,7 +227,7 @@ template <typename val_t>
  * @return New conjunction
  */
 and_t<val_t> _and(exps_t<val_t> &&exps) {
-    return std::move(and_t<val_t>(std::forward<exps_t<val_t>>(exps)));
+    return std::move(and_t<val_t>(std::move(exps)));
 }
 
 template <typename val_t>
@@ -232,7 +237,7 @@ template <typename val_t>
  * @return New disjunction
  */
 or_t<val_t> _or(exps_t<val_t> &&exps) {
-    return std::move(or_t<val_t>(std::forward<exps_t<val_t>>(exps)));
+    return std::move(or_t<val_t>(std::move(exps)));
 }
 
 }

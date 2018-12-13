@@ -29,27 +29,28 @@ std::vector<sans_t> parse_answers(XMLElement *element) {
     return as;
 }
 
-std::vector<squest_t> parse_questions(XMLElement *element) {
-    std::vector<squest_t> qs;
+quests_t<sval_t> parse_questions(XMLElement *element) {
+    quests_t<sval_t> qs;
     auto e = element->FirstChildElement("question");
 
     for(; e != nullptr; e = e->NextSiblingElement("question")) {
         auto answers = parse_answers(e->FirstChildElement("answers"));
-        squest_t q(e->Attribute("q"), std::move(answers));
-        qs.push_back(q);
+        auto q = std::make_unique<squest_t>(e->Attribute("q"),
+                                            std::move(answers));
+        qs.push_back(std::move(q));
     }
 
     return qs;
 }
 
-exp_t<sval_t> parse_exp(XMLElement *element) {
+exp_t<sval_t> *parse_exp(XMLElement *element) {
     std::string type = element->Attribute("type");
 
     if (type.compare("fact") == 0) {
-        return std::move(fact_t<sval_t>(element->Attribute("value")));
+        return new fact_t<sval_t>(element->Attribute("value"));
     }
 
-    return std::move(exp_t<sval_t>());
+    return new exp_t<sval_t>();
 }
 
 std::vector<srule_t *> parse_rules(XMLElement *element) {
@@ -58,7 +59,7 @@ std::vector<srule_t *> parse_rules(XMLElement *element) {
 
     for(; e != nullptr; e = e->NextSiblingElement("rule")) {
         auto exp_node = e->FirstChildElement("exp");
-        auto exp = exp_node ? parse_exp(exp_node) : exp_t<sval_t>();
+        auto exp = exp_node ? parse_exp(exp_node) : new exp_t<sval_t>();
         std::string id = e->Attribute("id");
         std::string out = e->Attribute("out");
         auto rule = new srule_t(std::move(id), std::move(exp), std::move(out));
@@ -80,7 +81,7 @@ bool load_kb(const std::string &filename, kb_t<std::string> **kb) {
     auto quests = internal::parse_questions(quests_node);
     auto rules_node = root_node->FirstChildElement("rules");
     auto rules = internal::parse_rules(rules_node);
-    (*kb)->load(quests);
+    (*kb)->load(std::move(quests));
 
     return true;
 }

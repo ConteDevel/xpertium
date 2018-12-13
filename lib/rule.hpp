@@ -16,19 +16,17 @@ namespace xpertium {
 template<class val_t>
 class rule_t {
     std::string m_id;
-    exp_t<val_t> m_exp;
+    std::unique_ptr<exp_t<val_t>> m_exp;
     std::string m_quest_id;
 public:
     /**
      * @brief Constructor
      * @param id Rule ID
-     * @param exp Activating logical expression
-     * @param quest_id Question ID
+     * @param exp Pointer to an activating logical expression
+     * @param q_id Question ID
      */
-    rule_t(std::string &&id, exp_t<val_t> &&exp, std::string &&quest_id) :
-        m_id{std::forward<std::string>(id)},
-        m_exp{std::forward<exp_t<val_t>>(exp)},
-        m_quest_id{std::forward<std::string>(quest_id)} {}
+    rule_t(const std::string &id, exp_t<val_t> *exp, const std::string &q_id) :
+        m_id{id}, m_exp{exp}, m_quest_id{q_id} {}
 
     /**
      * @brief Deletes a copy constructor
@@ -60,7 +58,7 @@ public:
      * @param kb Knowledge database
      * @return Check result
      */
-    bool is(const vals_t<val_t> &kb) const { return m_exp.is(kb); }
+    bool is(const vals_t<val_t> &kb) const { return m_exp->is(kb); }
 };
 
 }
