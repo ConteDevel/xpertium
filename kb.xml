@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<kb name="Display matrices">
+    <questions>
+        <question
+            id="qFormFactor"
+            q="How does it look?">
+            <answer id="CRT" title="Convex panel with tapered back"/>
+            <answer id="FlatCRT" title="Flat panel with tapered back"/>
+            <answer id="Plasma" title="Flat panel, it has width about 3 - 10 cm"/>
+            <answer id="Panel" title="Flat panel, it has width less 3 cm"/>
+        </question>
+        <question
+            id="qBlackColorIllumination"
+            q="Is black color illuminated?">
+            <answer id="LCD" title="Yes"/>
+            <answer id="LED" title="No"/>
+        </question>
+        <question
+            id="qHighlights"
+            q="Are white highlights visible on the edges of the display?">
+            <answer id="HasHighlight" title="Yes"/>
+            <answer id="NoHightlight" title="No"/>
+        </question>
+        <question
+            id="qFloatingColors"
+            q="Does the display color change noticeably when tilted?">
+            <answer id="FloatingColors" title="Yes"/>
+            <answer id="NoFloatingColors" title="No"/>
+        </question>
+    </questions>
+    <rules>
+        <rule id="rFormFactor" quest_id="qFormFactor"/>
+        <rule id="rPlasma" out="Plasma">
+            <exp type="fact" value="Plasma"/>
+        </rule>
+        <rule id="rFlatCRT" out="CRT with flat surface">
+            <exp type="fact" value="FlatCRT"/>
+        </rule>
+        <rule id="rCRT" out="CRT">
+            <exp type="fact" value="CRT"/>
+        </rule>
+        <rule id="rBlackColorIllumination" quest_id="qBlackColorIllumination">
+            <exp type="fact" value="Panel"/>
+        </rule>
+        <rule id="rHighlights" quest_id="qHighlights">
+            <exp type="fact" value="LCD"/>
+        </rule>
+        <rule id="rFloatingColors" quest_id="qFloatingColors">
+            <exp type="and">
+                <exp type="fact" value="LCD"/>
+                <exp type="fact" value="NoHightlight"/>
+            </exp>
+        </rule>
+        <rule id="rTN" out="TN/TN+film">
+            <exp type="and">
+                <exp type="fact" value="LCD"/>
+                <exp type="or">
+                    <exp type="fact" value="HasHighlight"/>
+                    <exp type="fact" value="FloatingColors"/>
+                </exp>
+            </exp>
+        </rule>
+        <rule id="rIPS" out="IPS">
+            <exp type="and">
+                <exp type="fact" value="LCD"/>
+                <exp type="fact" value="NoHightlight"/>
+                <exp type="fact" value="NoFloatingColors"/>
+            </exp>
+        </rule>
+        <rule id="rLED" out="LED">
+            <exp type="fact" value="LED"/>
+        </rule>
+    </rules>
+</kb>

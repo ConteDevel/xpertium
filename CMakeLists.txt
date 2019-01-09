@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(animals VERSION 1.0.0 LANGUAGES CXX)
+project(displays VERSION 1.0.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 14)
 set(TINYXML2_DIR "${PROJECT_SOURCE_DIR}/third-party/tinyxml2")
 set(TEST_DIR "${PROJECT_SOURCE_DIR}/test")

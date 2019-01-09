@@ -10,6 +10,7 @@
 namespace xpertium {
 
 using namespace tinyxml2;
+
 using sval_t = std::string;
 using sans_t = ans_t<sval_t>;
 using squest_t = quest_t<sval_t>;
@@ -29,15 +30,15 @@ std::vector<sans_t> parse_answers(XMLElement *element) {
     return as;
 }
 
-quests_t<sval_t> parse_questions(XMLElement *element) {
-    quests_t<sval_t> qs;
+quests_t<sval_t> *parse_questions(XMLElement *element) {
+    auto qs = new quests_t<sval_t>();
     auto e = element->FirstChildElement("question");
 
     for(; e != nullptr; e = e->NextSiblingElement("question")) {
         auto answers = parse_answers(e->FirstChildElement("answers"));
         auto q = std::make_unique<squest_t>(e->Attribute("q"),
                                             std::move(answers));
-        qs.push_back(std::move(q));
+        qs->push_back(std::move(q));
     }
 
     return qs;
@@ -47,14 +48,26 @@ exp_t<sval_t> *parse_exp(XMLElement *element) {
     std::string type = element->Attribute("type");
 
     if (type.compare("fact") == 0) {
-        return new fact_t<sval_t>(element->Attribute("value"));
+        return _fact<sval_t>(element->Attribute("value"));
+    }
+    if (type.compare("not") == 0) {
+        auto nested_exp = parse_exp(element->FirstChildElement("exp"));
+        return _not<sval_t>(nested_exp);
     }
 
-    return new exp_t<sval_t>();
+    auto exps = exps_t<sval_t>();
+    auto e = element->FirstChildElement("exp");
+    for(; e != nullptr; e = e->NextSiblingElement("exp")) {
+        auto nested_exp = std::unique_ptr<exp_t<sval_t>>(parse_exp(e));
+        exps.push_back(std::move(nested_exp));
+    }
+
+    return type.compare("and") == 0 ?
+                _and<sval_t>(std::move(exps)) : _or<sval_t>(std::move(exps));
 }
 
-std::vector<srule_t *> parse_rules(XMLElement *element) {
-    std::vector<srule_t *> rules;
+rules_t<sval_t> *parse_rules(XMLElement *element) {
+    auto rules = new rules_t<sval_t>();
     auto e = element->FirstChildElement("rule");
 
     for(; e != nullptr; e = e->NextSiblingElement("rule")) {
@@ -62,8 +75,9 @@ std::vector<srule_t *> parse_rules(XMLElement *element) {
         auto exp = exp_node ? parse_exp(exp_node) : new exp_t<sval_t>();
         std::string id = e->Attribute("id");
         std::string out = e->Attribute("out");
-        auto rule = new srule_t(std::move(id), std::move(exp), std::move(out));
-        rules.push_back(rule);
+        auto rule = std::make_unique<srule_t>(std::move(id), std::move(exp),
+                                              std::move(out));
+        rules->push_back(std::move(rule));
     }
 
     return rules;
@@ -81,7 +95,7 @@ bool load_kb(const std::string &filename, kb_t<std::string> **kb) {
     auto quests = internal::parse_questions(quests_node);
     auto rules_node = root_node->FirstChildElement("rules");
     auto rules = internal::parse_rules(rules_node);
-    (*kb)->load(std::move(quests));
+    (*kb)->load(quests, rules);
 
     return true;
 }

@@ -123,7 +123,8 @@ public:
     }
 };
 
-template <typename val_t> using  exps_t = std::vector<exp_t<val_t> *>;
+template <typename val_t>
+using  exps_t = std::vector<std::unique_ptr<exp_t<val_t>>>;
 
 /**
  * This class represents the logical conjunction
@@ -144,13 +145,6 @@ public:
      */
     and_t(and_t &&) = default;
 
-    virtual ~and_t() {
-        for (auto it = m_exps.begin() ; it != m_exps.end(); ++it) {
-            delete (*it);
-        }
-        m_exps.clear();
-    }
-
     /**
      * Move assignment
      */
@@ -160,7 +154,7 @@ public:
      * @inherits
      */
     virtual bool is(const vals_t<val_t> &kb) const override {
-        for (auto exp : m_exps) {
+        for (const auto &exp : m_exps) {
             if (!exp->is(kb)) { return false; }
         }
         return true;
@@ -193,7 +187,7 @@ public:
      * @inherits
      */
     virtual bool is(const vals_t<val_t> &kb) const override {
-        for (auto exp : this->m_exps) {
+        for (const auto &exp : this->m_exps) {
             if (exp->is(kb)) { return true; }
         }
         return false;
@@ -206,8 +200,8 @@ template <typename val_t>
  * @param v Fact value
  * @return New fact
  */
-fact_t<val_t> _fact(val_t &&v) {
-    return std::move(fact_t<val_t>(std::move(v)));
+fact_t<val_t> *_fact(val_t &&v) {
+    return new fact_t<val_t>(std::move(v));
 }
 
 template <typename val_t>
@@ -216,8 +210,8 @@ template <typename val_t>
  * @param exp Pointer of a nested logical expression
  * @return New negation
  */
-not_t<val_t> _not(exp_t<val_t> *exp) {
-    return std::move(not_t<val_t>(exp));
+not_t<val_t> *_not(exp_t<val_t> *exp) {
+    return new not_t<val_t>(exp);
 }
 
 template <typename val_t>
@@ -226,8 +220,8 @@ template <typename val_t>
  * @param exps Nested logical expression
  * @return New conjunction
  */
-and_t<val_t> _and(exps_t<val_t> &&exps) {
-    return std::move(and_t<val_t>(std::move(exps)));
+and_t<val_t> *_and(exps_t<val_t> &&exps) {
+    return new and_t<val_t>(std::move(exps));
 }
 
 template <typename val_t>
@@ -236,8 +230,8 @@ template <typename val_t>
  * @param exps Nested logical expression
  * @return New disjunction
  */
-or_t<val_t> _or(exps_t<val_t> &&exps) {
-    return std::move(or_t<val_t>(std::move(exps)));
+or_t<val_t> *_or(exps_t<val_t> &&exps) {
+    return new or_t<val_t>(std::move(exps));
 }
 
 }

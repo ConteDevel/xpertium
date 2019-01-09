@@ -19,6 +19,10 @@ int main() {
 
     std::cout << "KB name: " << kb->name() << std::endl;
 
+    expert_t<std::string> exp(*kb);
+    exp.reset();
+    exp.run();
+
     delete kb;
 
     return 0;
