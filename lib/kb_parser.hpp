@@ -32,12 +32,17 @@ std::vector<sans_t> parse_answers(XMLElement *element) {
 
 quests_t<sval_t> *parse_questions(XMLElement *element) {
     auto qs = new quests_t<sval_t>();
+
+    if (!element) { return qs; }
+
     auto e = element->FirstChildElement("question");
 
     for(; e != nullptr; e = e->NextSiblingElement("question")) {
         auto answers = parse_answers(e->FirstChildElement("answers"));
-        auto q = std::make_unique<squest_t>(e->Attribute("q"),
-                                            std::move(answers));
+        auto q = std::make_unique<squest_t>(
+                    e->Attribute("id"),
+                    e->Attribute("q"),
+                    std::move(answers));
         qs->push_back(std::move(q));
     }
 
@@ -74,9 +79,11 @@ rules_t<sval_t> *parse_rules(XMLElement *element) {
         auto exp_node = e->FirstChildElement("exp");
         auto exp = exp_node ? parse_exp(exp_node) : new exp_t<sval_t>();
         std::string id = e->Attribute("id");
-        std::string out = e->Attribute("out");
-        auto rule = std::make_unique<srule_t>(std::move(id), std::move(exp),
-                                              std::move(out));
+        auto q_id_ptr = e->Attribute("quest_id");
+        std::string *q_id = q_id_ptr ? new std::string(q_id_ptr) : nullptr;
+        auto out_ptr = e->Attribute("out");
+        std::string *out = out_ptr ? new std::string(out_ptr) : nullptr;
+        auto rule = std::make_unique<srule_t>(std::move(id), exp, q_id, out);
         rules->push_back(std::move(rule));
     }
 

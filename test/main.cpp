@@ -15,6 +15,7 @@ int main() {
 
     if (!xpertium::load_kb("kb.xml", &kb)) {
         std::cout << "Can't load knowledge database.\n";
+        return 1;
     }
 
     std::cout << "KB name: " << kb->name() << std::endl;

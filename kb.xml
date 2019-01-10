@@ -4,28 +4,36 @@
         <question
             id="qFormFactor"
             q="How does it look?">
-            <answer id="CRT" title="Convex panel with tapered back"/>
-            <answer id="FlatCRT" title="Flat panel with tapered back"/>
-            <answer id="Plasma" title="Flat panel, it has width about 3 - 10 cm"/>
-            <answer id="Panel" title="Flat panel, it has width less 3 cm"/>
+            <answers>
+                <answer id="CRT" title="Convex panel with tapered back"/>
+                <answer id="FlatCRT" title="Flat panel with tapered back"/>
+                <answer id="Plasma" title="Flat panel, it has width about 3 - 10 cm"/>
+                <answer id="Panel" title="Flat panel, it has width less 3 cm"/>
+            </answers>
         </question>
         <question
             id="qBlackColorIllumination"
             q="Is black color illuminated?">
-            <answer id="LCD" title="Yes"/>
-            <answer id="LED" title="No"/>
+            <answers>
+                <answer id="LCD" title="Yes"/>
+                <answer id="LED" title="No"/>
+            </answers>
         </question>
         <question
             id="qHighlights"
             q="Are white highlights visible on the edges of the display?">
-            <answer id="HasHighlight" title="Yes"/>
-            <answer id="NoHightlight" title="No"/>
+            <answers>
+                <answer id="HasHighlight" title="Yes"/>
+                <answer id="NoHightlight" title="No"/>
+            </answers>
         </question>
         <question
             id="qFloatingColors"
             q="Does the display color change noticeably when tilted?">
-            <answer id="FloatingColors" title="Yes"/>
-            <answer id="NoFloatingColors" title="No"/>
+            <answers>
+                <answer id="FloatingColors" title="Yes"/>
+                <answer id="NoFloatingColors" title="No"/>
+            </answers>
         </question>
     </questions>
     <rules>

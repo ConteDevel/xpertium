@@ -66,16 +66,19 @@ template <typename val_t> using answers_t = std::vector<ans_t<val_t>>;
  */
 template <typename val_t>
 class quest_t {
+    std::string m_id;
     std::string m_question;
     answers_t<val_t> m_answers;
 public:
     /**
      * @brief Constructor
+     * @param id Question ID
      * @param quest Question
      * @param answers List of answers
      */
-    quest_t(const std::string &quest, answers_t<val_t> &&answers)
-        : m_question{quest}, m_answers{std::move(answers)} {}
+    quest_t(const std::string &id, const std::string &quest,
+            answers_t<val_t> &&answers)
+        : m_id{id}, m_question{quest}, m_answers{std::move(answers)} {}
 
     /**
      * @brief Copy constructor
@@ -101,6 +104,11 @@ public:
      * @brief Move assignment
      */
     quest_t<val_t> &operator=(quest_t &&) = default;
+
+    /**
+     * @brief Returns the question ID
+     */
+    const std::string &id() { return m_id; }
 
     /**
      * @brief Returns a human readable question
