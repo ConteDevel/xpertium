@@ -4,6 +4,7 @@
 #include "kb.hpp"
 #include "tinyxml2.h"
 
+#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -71,19 +72,31 @@ exp_t<sval_t> *parse_exp(XMLElement *element) {
                 _and<sval_t>(std::move(exps)) : _or<sval_t>(std::move(exps));
 }
 
-rules_t<sval_t> *parse_rules(XMLElement *element) {
+squest_t *find_quest(quests_t<sval_t> *quests, const char *id) {
+    if (!id) { return nullptr; }
+    squest_t *quest = nullptr;
+    auto it = std::find_if(quests->begin(), quests->end(), [id] (auto &obj) {
+        return obj->id().compare(id) == 0;
+    });
+    if (it != quests->end()) { quest = it->get(); }
+
+    return quest;
+}
+
+rules_t<sval_t> *parse_rules(XMLElement *element, quests_t<sval_t> *quests) {
     auto rules = new rules_t<sval_t>();
     auto e = element->FirstChildElement("rule");
 
     for(; e != nullptr; e = e->NextSiblingElement("rule")) {
         auto exp_node = e->FirstChildElement("exp");
         auto exp = exp_node ? parse_exp(exp_node) : new exp_t<sval_t>();
+
         std::string id = e->Attribute("id");
-        auto q_id_ptr = e->Attribute("quest_id");
-        std::string *q_id = q_id_ptr ? new std::string(q_id_ptr) : nullptr;
+        auto quest = find_quest(quests, e->Attribute("quest_id"));
         auto out_ptr = e->Attribute("out");
         std::string *out = out_ptr ? new std::string(out_ptr) : nullptr;
-        auto rule = std::make_unique<srule_t>(std::move(id), exp, q_id, out);
+
+        auto rule = std::make_unique<srule_t>(std::move(id), exp, quest, out);
         rules->push_back(std::move(rule));
     }
 
@@ -101,7 +114,7 @@ bool load_kb(const std::string &filename, kb_t<std::string> **kb) {
     auto quests_node = root_node->FirstChildElement("questions");
     auto quests = internal::parse_questions(quests_node);
     auto rules_node = root_node->FirstChildElement("rules");
-    auto rules = internal::parse_rules(rules_node);
+    auto rules = internal::parse_rules(rules_node, quests);
     (*kb)->load(quests, rules);
 
     return true;

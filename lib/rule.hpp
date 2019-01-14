@@ -17,27 +17,27 @@ template<class val_t>
 class rule_t {
     std::string m_id;
     std::unique_ptr<exp_t<val_t>> m_exp;
-    std::unique_ptr<std::string> m_quest_id;
+    std::unique_ptr<quest_t<val_t>> m_quest;
     std::unique_ptr<val_t> m_out;
 public:
     /**
      * @brief Constructor
      * @param id Rule ID
      * @param exp Pointer to an activating logical expression
-     * @param q_id Question ID
+     * @param quest Question pointer
      * @param out Rule output
      */
-    rule_t(const std::string &id, exp_t<val_t> *exp, std::string *q_id,
-           val_t *out) : m_id{id}, m_exp{exp}, m_quest_id{q_id}, m_out{out} {}
+    rule_t(const std::string &id, exp_t<val_t> *exp, quest_t<val_t> *quest,
+           val_t *out) : m_id{id}, m_exp{exp}, m_quest{quest}, m_out{out} {}
 
     /**
      * @brief Constructor
      * @param id Rule ID
      * @param exp Pointer to an activating logical expression
-     * @param q_id Question ID
+     * @param q_id Question pointer
      */
-    rule_t(const std::string &id, exp_t<val_t> *exp, std::string *q_id) :
-        rule_t{id, exp, q_id, nullptr} {}
+    rule_t(const std::string &id, exp_t<val_t> *exp, quest_t<val_t> *quest) :
+        rule_t{id, exp, quest, nullptr} {}
 
     /**
      * @brief Deletes a copy constructor
@@ -77,9 +77,9 @@ public:
     const std::string &id() { return m_id; }
 
     /**
-     * @brief Returns an ID of the linked question
+     * @brief Returns the linked question
      */
-    const std::string *quest_id() { return m_quest_id.get(); }
+    const quest_t<val_t> *quest() { return m_quest.get(); }
 
     /**
      * @brief Returns a rule output (can be `nullptr`)
