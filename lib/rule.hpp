@@ -86,6 +86,11 @@ public:
     const quest_t<val_t> *question() const { return m_quest; }
 
     /**
+     * @brief Returns `true` if the rule is a target
+     */
+    bool target() const { return m_target; }
+
+    /**
      * @brief Returns a rule output (can be `nullptr`)
      */
     const val_t *out() const { return m_out.get(); }

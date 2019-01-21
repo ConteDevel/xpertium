@@ -3,6 +3,7 @@
 
 #include "dialog.hpp"
 #include "kb.hpp"
+#include "tracer.hpp"
 
 #include <algorithm>
 #include <vector>
@@ -13,6 +14,7 @@ template <typename val_t>
 class expert_t {
     kb_t<val_t> *m_kb;
     base_dialog_t<val_t> *m_dialog;
+    tracer_t<val_t> *m_tracer;
     vals_t<val_t> m_facts;
     std::vector<rule_t<val_t> *> m_unused_rules;
 public:
@@ -20,9 +22,11 @@ public:
      * @brief Constructor
      * @param kb Knowledge database
      * @param dialog Dialogue
+     * @param tracer Stack tracer
      */
-    expert_t(kb_t<val_t> *kb, base_dialog_t<val_t> *dialog) :
-        m_kb{kb}, m_dialog{dialog} {}
+    expert_t(kb_t<val_t> *kb, base_dialog_t<val_t> *dialog,
+             tracer_t<val_t> *tracer) :
+        m_kb{kb}, m_dialog{dialog}, m_tracer{tracer} {}
 
     /**
      * @brief Copy constructor
@@ -55,18 +59,25 @@ public:
         while (!m_unused_rules.empty()) {
             auto it = m_unused_rules.begin();
             auto old_size = m_unused_rules.size();
+            bool target = false;
             for (; it != m_unused_rules.end(); ++it) {
+                target = false;
                 if ((*it)->is(m_facts)) {
 
                     if (!handle_rule(*it)) { return false; }
+                    target = (*it)->target();
 
                     m_unused_rules.erase(it);
                 }
+                if (target) { break; }
+            }
+            if (target) {
+                m_dialog->print() << "Result: " << m_facts.back() << std::endl;
+                return true;
             }
             if (old_size == m_unused_rules.size()) {
-                m_dialog->print() << "Result : " << m_facts.back() << std::endl;
-
-                break;
+                m_dialog->print() << "No reachable targets" << std::endl;
+                return false;
             }
         }
 
@@ -88,6 +99,9 @@ private:
 
             return false;
         }
+
+        m_tracer->push_rule(rule, fact);
+        m_tracer->push_fact(fact);
 
         m_facts.push_back(fact);
 

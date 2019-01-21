@@ -1,6 +1,7 @@
 #include "dialog.hpp"
 #include "kb_parser.hpp"
 #include "expert.hpp"
+#include "tracer.hpp"
 
 #include <string>
 #include <iostream>
@@ -22,9 +23,17 @@ int main() {
     std::cout << "KB name: " << kb->name() << std::endl;
 
     std::unique_ptr<dialog_t<sval_t>> dialog(new dialog_t<sval_t>());
-    expert_t<std::string> exp(kb, dialog.get());
+    std::unique_ptr<tracer_t<sval_t>> tracer(new tracer_t<sval_t>());
+    expert_t<std::string> exp(kb, dialog.get(), tracer.get());
     exp.reset();
     exp.run();
+    char ch;
+    std::cout << "Show trace (Y/N): ";
+    std::cin >> ch;
+
+    if (ch == 'Y' || ch == 'y') {
+        tracer->print();
+    }
 
     delete kb;
 
