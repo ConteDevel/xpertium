@@ -38,13 +38,13 @@
     </questions>
     <rules>
         <rule id="rFormFactor" quest_id="qFormFactor"/>
-        <rule id="rPlasma" out="Plasma">
+        <rule id="rPlasma" out="Plasma" target="true">
             <exp type="fact" value="Plasma"/>
         </rule>
-        <rule id="rFlatCRT" out="CRT with flat surface">
+        <rule id="rFlatCRT" out="CRT with flat surface" target="true">
             <exp type="fact" value="FlatCRT"/>
         </rule>
-        <rule id="rCRT" out="CRT">
+        <rule id="rCRT" out="CRT" target="true">
             <exp type="fact" value="CRT"/>
         </rule>
         <rule id="rBlackColorIllumination" quest_id="qBlackColorIllumination">
@@ -59,7 +59,7 @@
                 <exp type="fact" value="NoHightlight"/>
             </exp>
         </rule>
-        <rule id="rTN" out="TN/TN+film">
+        <rule id="rTN" out="TN/TN+film" target="true">
             <exp type="and">
                 <exp type="fact" value="LCD"/>
                 <exp type="or">
@@ -68,14 +68,14 @@
                 </exp>
             </exp>
         </rule>
-        <rule id="rIPS" out="IPS">
+        <rule id="rIPS" out="IPS" target="true">
             <exp type="and">
                 <exp type="fact" value="LCD"/>
                 <exp type="fact" value="NoHightlight"/>
                 <exp type="fact" value="NoFloatingColors"/>
             </exp>
         </rule>
-        <rule id="rLED" out="LED">
+        <rule id="rLED" out="LED" target="true">
             <exp type="fact" value="LED"/>
         </rule>
     </rules>

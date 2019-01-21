@@ -5,6 +5,7 @@
 #include "tinyxml2.h"
 
 #include <algorithm>
+#include <cstring>
 #include <string>
 #include <vector>
 
@@ -93,10 +94,13 @@ rules_t<sval_t> *parse_rules(XMLElement *element, quests_t<sval_t> *quests) {
 
         std::string id = e->Attribute("id");
         auto quest = find_quest(quests, e->Attribute("quest_id"));
+        auto target_str = e->Attribute("target");
+        bool target = target_str && std::strcmp(target_str, "false") != 0;
         auto out_ptr = e->Attribute("out");
         std::string *out = out_ptr ? new std::string(out_ptr) : nullptr;
 
-        auto rule = std::make_unique<srule_t>(std::move(id), exp, quest, out);
+        auto rule = std::make_unique<srule_t>(std::move(id), exp, quest,
+                                              target, out);
         rules->push_back(std::move(rule));
     }
 

@@ -1,3 +1,4 @@
+#include "dialog.hpp"
 #include "kb_parser.hpp"
 #include "expert.hpp"
 
@@ -20,7 +21,8 @@ int main() {
 
     std::cout << "KB name: " << kb->name() << std::endl;
 
-    expert_t<std::string> exp(*kb);
+    std::unique_ptr<dialog_t<sval_t>> dialog(new dialog_t<sval_t>());
+    expert_t<std::string> exp(kb, dialog.get());
     exp.reset();
     exp.run();
 

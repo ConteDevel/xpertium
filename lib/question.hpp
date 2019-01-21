@@ -51,12 +51,12 @@ public:
     /**
      * @brief Returns a title of the answer
      */
-    const std::string &title() { return m_title; }
+    const std::string &title() const { return m_title; }
 
     /**
      * @brief Returns an ID of the answer
      */
-    const val_t &id() { return m_title; }
+    val_t id() const { return m_id; }
 };
 
 template <typename val_t> using answers_t = std::vector<ans_t<val_t>>;
@@ -108,17 +108,17 @@ public:
     /**
      * @brief Returns the question ID
      */
-    const std::string &id() { return m_id; }
+    const std::string &id() const { return m_id; }
 
     /**
      * @brief Returns a human readable question
      */
-    const std::string &question() { return m_question; }
+    const std::string &question() const { return m_question; }
 
     /**
      * @brief Returns a list of answers
      */
-    const answers_t<val_t> &answers() { return m_answers; }
+    const answers_t<val_t> &answers() const { return m_answers; }
 };
 
 }
