@@ -24,9 +24,11 @@ int main() {
 
     std::unique_ptr<dialog_t<sval_t>> dialog(new dialog_t<sval_t>());
     std::unique_ptr<tracer_t<sval_t>> tracer(new tracer_t<sval_t>());
-    expert_t<std::string> exp(kb, dialog.get(), tracer.get());
-    exp.reset();
-    exp.run();
+    expert_t<std::string> exp(kb, *dialog.get(), *tracer.get());
+    std::vector<sval_t> init({"Сократ"});
+    exp.reset(&init);
+    sval_t target = "Смертные";
+    exp.run(&target);
     char ch;
     std::cout << "Show trace (Y/N): ";
     std::cin >> ch;

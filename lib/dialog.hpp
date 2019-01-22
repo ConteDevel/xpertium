@@ -13,8 +13,8 @@ public:
     base_dialog_t() {}
     virtual ~base_dialog_t() {}
 
-    virtual val_t ask(const quest_t<val_t> *quest) = 0;
-    virtual std::ostream &print() = 0;
+    virtual val_t ask(const quest_t<val_t> *quest) const = 0;
+    virtual std::ostream &print() const = 0;
 };
 
 template <typename val_t>
@@ -50,7 +50,7 @@ public:
      */
     dialog_t<val_t> &operator=(dialog_t &&) = default;
 
-    virtual val_t ask(const quest_t<val_t> *quest) override {
+    virtual val_t ask(const quest_t<val_t> *quest) const override {
         std::cout << "Q: " << quest->question() << std::endl;
         auto answers = quest->answers();
         for (size_t i = 0; i < answers.size(); ++i) {
@@ -70,7 +70,7 @@ public:
         return answers[ans_idx].id();
     }
 
-    virtual std::ostream &print() override {
+    virtual std::ostream &print() const override {
         return std::cout;
     }
 };

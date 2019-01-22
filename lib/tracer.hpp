@@ -18,6 +18,7 @@ public:
     virtual void push_fact(val_t fact) = 0;
     virtual void push_rule(const rule_t<val_t> *rule, val_t out) = 0;
     virtual void print() = 0;
+    virtual void clear() = 0;
 };
 
 template <typename val_t>
@@ -43,6 +44,8 @@ public:
             std::cout << (*it) << std::endl;
         }
     }
+
+    virtual void clear() override { m_trace.clear(); }
 private:
     auto to_string(val_t val) {
         if constexpr (std::is_same<val_t, std::string>::value) {

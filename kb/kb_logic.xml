@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<kb name="Философия">
+    <questions>
+    </questions>
+    <rules>
+        <rule id="пСмертность" out="Смертные">
+            <exp type="fact" value="Люди"/>
+        </rule>
+        <rule id="пЛюди" out="Люди">
+            <exp type="fact" value="Человек"/>
+        </rule>
+        <rule id="пСократ" out="Человек">
+            <exp type="fact" value="Сократ"/>
+        </rule>
+    </rules>
+</kb>

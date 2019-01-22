@@ -55,14 +55,14 @@ public:
     /**
      * @brief Returns a name of the knowledge database
      */
-    const std::string &name() { return m_name; }
+    const std::string &name() const { return m_name; }
 
     /**
      * @brief Returns a question by ID
      * @param id Question ID
      * @return Pointer of question or `nullptr`
      */
-    const quest_t<val_t> *question(const std::string *id) {
+    const quest_t<val_t> *question(const std::string *id) const {
         for (auto it = m_quests->begin(); it != m_quests->end(); ++it) {
             if (it->id == (*id)) { return *it; }
         }
@@ -72,12 +72,12 @@ public:
     /**
      * @brief Returns questions
      */
-    const quests_t<val_t> *questions() { return m_quests.get(); }
+    const quests_t<val_t> *questions() const { return m_quests.get(); }
 
     /**
      * @brief Returns rules
      */
-    const rules_t<val_t> *rules() { return m_rules.get(); }
+    const rules_t<val_t> *rules() const { return m_rules.get(); }
 
     /**
      * @brief Loads a production model
