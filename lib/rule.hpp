@@ -3,6 +3,7 @@
 
 #include "expression.hpp"
 #include "question.hpp"
+#include "utils.hpp"
 
 #include <memory>
 #include <string>
@@ -94,6 +95,30 @@ public:
      * @brief Returns a rule output (can be `nullptr`)
      */
     const val_t *out() const { return m_out.get(); }
+
+    vals_t<val_t> unknowns(const vals_t<val_t> &kb) const {
+        vals_t<val_t> facts;
+
+        if (m_exp) {
+            auto uks = m_exp->unknowns(kb);
+            for (auto it = uks.begin(); it != uks.end(); ++it) {
+                if (it->state) { facts.push_back(it->value); }
+            }
+        }
+
+        return facts;
+    }
+
+    bool is_possible_out(val_t value) const {
+        if (m_out && (*m_out) == value) { return true; }
+        if (m_quest) {
+            auto ans = m_quest->answers();
+            for (auto it = ans.begin(); it != ans.end(); ++it) {
+                if (it->id() == value) { return true; }
+            }
+        }
+        return false;
+    }
 };
 
 }

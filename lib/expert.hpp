@@ -65,11 +65,27 @@ public:
     }
 
     /**
-     * @brief Launch the expert system
+     * @brief Launch the expert system with reverse output
      * @param target_fact The target fact (`nullptr` to run for any target)
      * @return True if the target was achieved
      */
-    bool run(const val_t *target_fact = nullptr) {
+    bool reverse(const val_t target_fact) {
+        bool result = reverse_impl(target_fact);
+        if (result) {
+            m_dialog.print() << "Target is reachable!" << std::endl;
+        } else {
+            m_dialog.print() << "Target isn't reachable!" << std::endl;
+        }
+
+        return result;
+    }
+
+    /**
+     * @brief Launch the expert system with direct output
+     * @param target_fact The target fact (`nullptr` to run for any target)
+     * @return True if the target was achieved
+     */
+    bool direct(const val_t *target_fact = nullptr) {
         while (!m_unused_rules.empty()) {
             auto it = m_unused_rules.begin();
             auto old_size = m_unused_rules.size();
@@ -127,6 +143,45 @@ private:
         m_facts.push_back(fact);
 
         return true;
+    }
+
+    bool reverse_impl(const val_t target_fact) {
+        for (auto i = m_unused_rules.begin(); i < m_unused_rules.end(); ++i) {
+            if ((*i)->is_possible_out(target_fact)) {
+                if (check_rule(*i, target_fact)) {
+                    auto uks = (*i)->unknowns(m_facts);
+                    if (uks.empty()) {
+                        return (*i)->is(m_facts);
+                    }
+                    for (auto u = uks.begin(); u != uks.end(); ++u) {
+                        if (reverse_impl(*u)) { return true; }
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    bool check_rule(const rule_t<val_t> *rule, val_t target_fact) {
+        val_t fact;
+
+        if (rule->question()) {
+            fact = m_dialog.ask(rule->question());
+        } else if (rule->out()) {
+            fact = *rule->out();
+        } else {
+            m_dialog.print() << "Rule `" << rule->id()
+                              << "` doesn't consist question or output"
+                              << std::endl;
+
+            return false;
+        }
+
+        m_tracer.push_rule(rule, fact);
+        m_tracer.push_fact(fact);
+
+        return fact == target_fact;
     }
 };
 

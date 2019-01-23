@@ -28,7 +28,8 @@ int main() {
     std::vector<sval_t> init({"Сократ"});
     exp.reset(&init);
     sval_t target = "Смертные";
-    exp.run(&target);
+    //exp.direct(&target);
+    exp.reverse(target);
     char ch;
     std::cout << "Show trace (Y/N): ";
     std::cin >> ch;
