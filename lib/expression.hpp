@@ -1,13 +1,15 @@
 #ifndef EXPRESSION_HPP
 #define EXPRESSION_HPP
 
+#include "utils.hpp"
+
 #include <algorithm>
 #include <memory>
 #include <vector>
 
 namespace xpertium {
 
-template <typename val_t> using  vals_t = std::vector<val_t>;
+template <typename val_t> using vals_t = std::vector<val_t>;
 
 /**
  * This class must be a parent of all expression classes
@@ -56,6 +58,15 @@ public:
      * @return Check result
      */
     virtual bool is(const vals_t<val_t> &kb) const { return true; }
+
+    /**
+     * @brief Returns a required fact
+     * @param kb Knowledge database
+     * @return Required facts
+     */
+    virtual unknowns_t<val_t> unknowns(const vals_t<val_t> &kb) const {
+        return unknowns_t<val_t>();
+    }
 };
 
 /**
@@ -86,6 +97,16 @@ public:
      */
     virtual bool is(const vals_t<val_t> &kb) const override {
         return std::find(kb.begin(), kb.end(), m_value) != kb.end();
+    }
+
+    /**
+     * @inherits
+     */
+    virtual unknowns_t<val_t> unknowns(const vals_t<val_t> &kb) const override {
+        if (std::find(kb.begin(), kb.end(), m_value) != kb.end()) {
+            return exp_t<val_t>::unknowns(kb);
+        }
+        return unknowns_t<val_t>({unknown_t(true, m_value)});
     }
 };
 
@@ -121,10 +142,21 @@ public:
     virtual bool is(const vals_t<val_t> &kb) const override {
         return !m_exp->is(kb);
     }
+
+    /**
+     * @inherits
+     */
+    virtual unknowns_t<val_t> unknowns(const vals_t<val_t> &kb) const override {
+        auto uks = m_exp->unknowns(kb);
+        for (auto it = uks.begin(); it != uks.end(); ++it) {
+            it->state != it->state;
+        }
+        return uks;
+    }
 };
 
 template <typename val_t>
-using  exps_t = std::vector<std::unique_ptr<exp_t<val_t>>>;
+using exps_t = std::vector<std::unique_ptr<exp_t<val_t>>>;
 
 /**
  * This class represents the logical conjunction
@@ -159,6 +191,23 @@ public:
         }
         return true;
     }
+
+    /**
+     * @inherits
+     */
+    virtual unknowns_t<val_t> unknowns(const vals_t<val_t> &kb) const override {
+        if(m_exps.empty()) { return exp_t<val_t>::unknowns(kb); }
+
+        auto uks = (*m_exps.begin())->unknowns(kb);
+        for (auto it = m_exps.begin() + 1; it < m_exps.end(); ++it) {
+            auto tmp = (*it)->unknowns(kb);
+            if (tmp.size() > uks.size()) {
+                uks = std::move(tmp);
+            }
+        }
+
+        return uks;
+    }
 };
 
 /**
@@ -191,6 +240,38 @@ public:
             if (exp->is(kb)) { return true; }
         }
         return false;
+    }
+
+    /**
+     * @inherits
+     */
+    virtual unknowns_t<val_t> unknowns(const vals_t<val_t> &kb) const override {
+        if(this->m_exps.empty()) { return exp_t<val_t>::unknowns(kb); }
+
+        auto uks = unknowns_t<val_t>();
+        for (auto it = this->m_exps.begin(); it < this->m_exps.end(); ++it) {
+            auto tmp = (*it)->unknowns(kb);
+            // If a reachable branch was found the knowledge database has enough
+            // facts to the expression was true
+            if (tmp.empty()) { return unknowns_t<val_t>(); }
+            // Plex branches into a single vector
+            plex(uks, std::move(tmp));
+        }
+
+        return uks;
+    }
+private:
+    void plex(unknowns_t<val_t> &uks, const unknowns_t<val_t> &&branch) const {
+        for (auto i = branch.begin(); i != branch.end(); ++i) {
+            auto j = std::find_if(uks.begin(), uks.end(), [i](auto obj) {
+                return obj.value == i->value;
+            });
+            if (j == uks.end()) {
+                uks.push_back(*i);
+            } else if (!j->state && i->state) {
+                j->state = true;
+            }
+        }
     }
 };
 
