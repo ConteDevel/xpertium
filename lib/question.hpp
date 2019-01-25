@@ -21,7 +21,7 @@ public:
      * @param id Answer ID (it must define a new fact in the system)
      * @param title Human readable title
      */
-    ans_t(val_t &&id, const std::string &title): m_id{std::move(id)},
+    ans_t(val_t id, const std::string &title): m_id{id},
         m_title{title} {}
     /**
      * @brief Copy constructor

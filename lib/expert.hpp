@@ -92,7 +92,7 @@ public:
             bool is_target = false;
             for (; it < m_cur_rules.end(); ++it) {
                 is_target = false;
-                if ((*it)->is(m_facts)) {
+                if ((*it)->is(m_facts) > 0) {
                     if (!handle_rule(*it)) { return false; }
                     is_target = (*it)->target();
 
@@ -170,7 +170,7 @@ private:
      * @return Check result
      */
     bool check_rule(const rule_t<val_t> *rule, val_t target_fact) {
-        if (rule->is(m_facts)) {
+        if (rule->is(m_facts) > 0) {
             m_facts.push_back(target_fact);
             m_tracer.push_fact(target_fact);
 

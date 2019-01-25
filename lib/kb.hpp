@@ -3,6 +3,7 @@
 
 #include "question.hpp"
 #include "rule.hpp"
+#include "term.hpp"
 
 #include <string>
 #include <utility>
@@ -16,10 +17,14 @@ template <typename val_t>
 using rules_t = std::vector<std::unique_ptr<rule_t<val_t>>>;
 
 template <typename val_t>
+using terms_t = std::vector<std::unique_ptr<term_t<val_t>>>;
+
+template <typename val_t>
 class kb_t {
     std::string m_name;
     std::unique_ptr<quests_t<val_t>> m_quests;
     std::unique_ptr<rules_t<val_t>> m_rules;
+    std::unique_ptr<terms_t<val_t>> m_terms;
 public:
     /**
      * @brief Constructor
@@ -80,13 +85,21 @@ public:
     const rules_t<val_t> *rules() const { return m_rules.get(); }
 
     /**
+     * @brief Returns terms
+     */
+    const terms_t<val_t> *terms() const { return m_terms.get(); }
+
+    /**
      * @brief Loads a production model
      * @param quests Questions
      * @param rules Production rules
+     * @param terms Terms
      */
-    void load(quests_t<val_t> *quests, rules_t<val_t> *rules) {
+    void load(quests_t<val_t> *quests, rules_t<val_t> *rules,
+              terms_t<val_t> *terms = nullptr) {
         m_quests = std::unique_ptr<quests_t<val_t>>(quests);
         m_rules = std::unique_ptr<rules_t<val_t>>(rules);
+        m_terms = std::unique_ptr<terms_t<val_t>>(terms);
     }
 };
 

@@ -1,7 +1,8 @@
 #ifndef EXPRESSION_HPP
 #define EXPRESSION_HPP
 
-#include "utils.hpp"
+#include "term.hpp"
+#include "unknown.hpp"
 
 #include <algorithm>
 #include <memory>
@@ -57,7 +58,7 @@ public:
      * @param fb Fact database
      * @return Check result
      */
-    virtual bool is(const vals_t<val_t> &fb) const { return true; }
+    virtual double is(const vals_t<val_t> &fb) const { return 1; }
 
     /**
      * @brief Returns required facts
@@ -75,12 +76,15 @@ public:
 template <typename val_t>
 class fact_t: public exp_t<val_t> {
     val_t m_value;
+    phase_t *m_phase;
 public:
     /**
      * @brief Constructor
      * @param value Fact value
+     * @param phase Linked phase
      */
-    fact_t(val_t &&value) : m_value{std::move(value)} {}
+    fact_t(val_t value, phase_t *phase = nullptr) :
+        m_value{value}, m_phase{phase} {}
 
     /**
      * @brief Move constructor
@@ -95,8 +99,8 @@ public:
     /**
      * @inherits
      */
-    virtual bool is(const vals_t<val_t> &fb) const override {
-        return std::find(fb.begin(), fb.end(), m_value) != fb.end();
+    virtual double is(const vals_t<val_t> &fb) const override {
+        return std::find(fb.begin(), fb.end(), m_value) != fb.end() ? 1.0 : 0.0;
     }
 
     /**
@@ -139,8 +143,8 @@ public:
     /**
      * @inherits
      */
-    virtual bool is(const vals_t<val_t> &fb) const override {
-        return !m_exp->is(fb);
+    virtual double is(const vals_t<val_t> &fb) const override {
+        return 1.0 - m_exp->is(fb);
     }
 
     /**
@@ -185,11 +189,11 @@ public:
     /**
      * @inherits
      */
-    virtual bool is(const vals_t<val_t> &fb) const override {
+    virtual double is(const vals_t<val_t> &fb) const override {
         for (const auto &exp : m_exps) {
-            if (!exp->is(fb)) { return false; }
+            if (!exp->is(fb)) { return 0.0; }
         }
-        return true;
+        return 1.0;
     }
 
     /**
@@ -235,11 +239,11 @@ public:
     /**
      * @inherits
      */
-    virtual bool is(const vals_t<val_t> &fb) const override {
+    virtual double is(const vals_t<val_t> &fb) const override {
         for (const auto &exp : this->m_exps) {
-            if (exp->is(fb)) { return true; }
+            if (exp->is(fb)) { return 1.0; }
         }
-        return false;
+        return 0.0;
     }
 
     /**
