@@ -71,10 +71,10 @@ public:
 
     /**
      * @brief Checks if an activating logical expression is true
-     * @param kb Knowledge database
+     * @param fb Fact database
      * @return Check result
      */
-    bool is(const vals_t<val_t> &kb) const { return m_exp->is(kb); }
+    bool is(const vals_t<val_t> &fb) const { return m_exp->is(fb); }
 
     /**
      * @brief Returns a rule ID
@@ -96,11 +96,16 @@ public:
      */
     const val_t *out() const { return m_out.get(); }
 
-    vals_t<val_t> unknowns(const vals_t<val_t> &kb) const {
+    /**
+     * @brief Returns required facts
+     * @param fb Fact database
+     * @return Required facts
+     */
+    vals_t<val_t> unknowns(const vals_t<val_t> &fb) const {
         vals_t<val_t> facts;
 
         if (m_exp) {
-            auto uks = m_exp->unknowns(kb);
+            auto uks = m_exp->unknowns(fb);
             for (auto it = uks.begin(); it != uks.end(); ++it) {
                 if (it->state) { facts.push_back(it->value); }
             }
@@ -109,6 +114,11 @@ public:
         return facts;
     }
 
+    /**
+     * @brief Checks if `value` is a possible output for the rule
+     * @param value Possible output fact
+     * @return Check result
+     */
     bool is_possible_out(val_t value) const {
         if (m_out && (*m_out) == value) { return true; }
         if (m_quest) {

@@ -54,17 +54,17 @@ public:
 
     /**
      * @brief Checks if the current logical expression is true
-     * @param kb Knowledge database
+     * @param fb Fact database
      * @return Check result
      */
-    virtual bool is(const vals_t<val_t> &kb) const { return true; }
+    virtual bool is(const vals_t<val_t> &fb) const { return true; }
 
     /**
-     * @brief Returns a required fact
-     * @param kb Knowledge database
+     * @brief Returns required facts
+     * @param fb Fact database
      * @return Required facts
      */
-    virtual unknowns_t<val_t> unknowns(const vals_t<val_t> &kb) const {
+    virtual unknowns_t<val_t> unknowns(const vals_t<val_t> &fb) const {
         return unknowns_t<val_t>();
     }
 };
@@ -95,16 +95,16 @@ public:
     /**
      * @inherits
      */
-    virtual bool is(const vals_t<val_t> &kb) const override {
-        return std::find(kb.begin(), kb.end(), m_value) != kb.end();
+    virtual bool is(const vals_t<val_t> &fb) const override {
+        return std::find(fb.begin(), fb.end(), m_value) != fb.end();
     }
 
     /**
      * @inherits
      */
-    virtual unknowns_t<val_t> unknowns(const vals_t<val_t> &kb) const override {
-        if (std::find(kb.begin(), kb.end(), m_value) != kb.end()) {
-            return exp_t<val_t>::unknowns(kb);
+    virtual unknowns_t<val_t> unknowns(const vals_t<val_t> &fb) const override {
+        if (std::find(fb.begin(), fb.end(), m_value) != fb.end()) {
+            return exp_t<val_t>::unknowns(fb);
         }
         return unknowns_t<val_t>({unknown_t(true, m_value)});
     }
@@ -139,15 +139,15 @@ public:
     /**
      * @inherits
      */
-    virtual bool is(const vals_t<val_t> &kb) const override {
-        return !m_exp->is(kb);
+    virtual bool is(const vals_t<val_t> &fb) const override {
+        return !m_exp->is(fb);
     }
 
     /**
      * @inherits
      */
-    virtual unknowns_t<val_t> unknowns(const vals_t<val_t> &kb) const override {
-        auto uks = m_exp->unknowns(kb);
+    virtual unknowns_t<val_t> unknowns(const vals_t<val_t> &fb) const override {
+        auto uks = m_exp->unknowns(fb);
         for (auto it = uks.begin(); it != uks.end(); ++it) {
             it->state != it->state;
         }
@@ -185,9 +185,9 @@ public:
     /**
      * @inherits
      */
-    virtual bool is(const vals_t<val_t> &kb) const override {
+    virtual bool is(const vals_t<val_t> &fb) const override {
         for (const auto &exp : m_exps) {
-            if (!exp->is(kb)) { return false; }
+            if (!exp->is(fb)) { return false; }
         }
         return true;
     }
@@ -195,12 +195,12 @@ public:
     /**
      * @inherits
      */
-    virtual unknowns_t<val_t> unknowns(const vals_t<val_t> &kb) const override {
-        if(m_exps.empty()) { return exp_t<val_t>::unknowns(kb); }
+    virtual unknowns_t<val_t> unknowns(const vals_t<val_t> &fb) const override {
+        if(m_exps.empty()) { return exp_t<val_t>::unknowns(fb); }
 
-        auto uks = (*m_exps.begin())->unknowns(kb);
+        auto uks = (*m_exps.begin())->unknowns(fb);
         for (auto it = m_exps.begin() + 1; it < m_exps.end(); ++it) {
-            auto tmp = (*it)->unknowns(kb);
+            auto tmp = (*it)->unknowns(fb);
             if (tmp.size() > uks.size()) {
                 uks = std::move(tmp);
             }
@@ -235,9 +235,9 @@ public:
     /**
      * @inherits
      */
-    virtual bool is(const vals_t<val_t> &kb) const override {
+    virtual bool is(const vals_t<val_t> &fb) const override {
         for (const auto &exp : this->m_exps) {
-            if (exp->is(kb)) { return true; }
+            if (exp->is(fb)) { return true; }
         }
         return false;
     }
@@ -245,13 +245,13 @@ public:
     /**
      * @inherits
      */
-    virtual unknowns_t<val_t> unknowns(const vals_t<val_t> &kb) const override {
-        if(this->m_exps.empty()) { return exp_t<val_t>::unknowns(kb); }
+    virtual unknowns_t<val_t> unknowns(const vals_t<val_t> &fb) const override {
+        if(this->m_exps.empty()) { return exp_t<val_t>::unknowns(fb); }
 
         auto uks = unknowns_t<val_t>();
         for (auto it = this->m_exps.begin(); it < this->m_exps.end(); ++it) {
-            auto tmp = (*it)->unknowns(kb);
-            // If a reachable branch was found the knowledge database has enough
+            auto tmp = (*it)->unknowns(fb);
+            // If a reachable branch was found the fact database has enough
             // facts to the expression was true
             if (tmp.empty()) { return unknowns_t<val_t>(); }
             // Plex branches into a single vector
